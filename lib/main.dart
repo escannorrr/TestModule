@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 void main() {
@@ -25,13 +25,22 @@ class MyHomePage extends StatefulWidget {
   MyHomePageState createState() => MyHomePageState();
 }
 
-class MyHomePageState extends State<MyHomePage> {
-
+class MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   final TransformationController _transformationController =
       TransformationController();
   final TextEditingController _xCoordinateController = TextEditingController();
   final TextEditingController _yCoordinateController = TextEditingController();
   final TextEditingController _zoomController = TextEditingController();
+
+  AnimationController? _controller;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 700));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,16 +55,13 @@ class MyHomePageState extends State<MyHomePage> {
             width: 20.0,
           ),
           Container(
-            width: 400,
+            width: MediaQuery.of(context).size.width,
             height: 200,
-            margin: const EdgeInsets.symmetric(horizontal: 10.0,vertical: 5.0),
             decoration: BoxDecoration(
-              border: Border.all(
-                color: const Color(0xFF444444)
-              )
-            ),
+                border: Border.all(color: const Color(0xFF444444))),
             child: InteractiveViewer(
               transformationController: _transformationController,
+              clipBehavior: Clip.none,
               child: CustomPaint(
                 painter: OpenPainter(),
               ),
@@ -100,13 +106,37 @@ class MyHomePageState extends State<MyHomePage> {
           ElevatedButton(
               onPressed: () {
                 final double scale = double.parse(_zoomController.text);
-                final x= -double.parse(_xCoordinateController.text)*(scale-1);
-                final y= -double.parse(_yCoordinateController.text)*(scale-1);
+                // final x= -double.parse(_xCoordinateController.text)*(scale-1);
+                // final y= -double.parse(_yCoordinateController.text)*(scale-1);
+                final x = double.parse(_xCoordinateController.text) <
+                        (MediaQuery.of(context).size.width / 2)
+                    ? (-((double.parse(_xCoordinateController.text)) -
+                            ((MediaQuery.of(context).size.width) / 2))) *
+                        (scale - 1)
+                    : (-((double.parse(_xCoordinateController.text)) +
+                            ((MediaQuery.of(context).size.width) / 2))) *
+                        (scale - 1);
+                final y = double.parse(_yCoordinateController.text) < (100)
+                    ? (-((double.parse(_yCoordinateController.text)) - 100)) *
+                        (scale - 1)
+                    : (-((double.parse(_yCoordinateController.text)) + 100)) *
+                        (scale - 1);
                 final zoomed = Matrix4.identity()
-                  ..translate(x,y)
+                  ..translate(x, y)
                   ..scale(scale);
                 final value = zoomed;
-                _transformationController.value= value;
+                // _transformationController.value = value;
+                final animationReset = Matrix4Tween(
+                        end: value,
+                        begin: Matrix4.identity())
+                    .animate(_controller!);
+
+                animationReset.addListener(() {
+                  _transformationController.value = animationReset.value;
+                });
+
+                _controller!.reset();
+                _controller!.forward();
               },
               child: const Text("ZOOM")),
           const SizedBox(
@@ -114,7 +144,18 @@ class MyHomePageState extends State<MyHomePage> {
           ),
           ElevatedButton(
               onPressed: () {
-                _transformationController.value = Matrix4.identity();
+                final animationReset = Matrix4Tween(
+                        begin: _transformationController.value,
+                        end: Matrix4.identity())
+                    .animate(_controller!);
+
+                animationReset.addListener(() {
+                  _transformationController.value = animationReset.value;
+                });
+
+                _controller!.reset();
+                _controller!.forward();
+                // _transformationController.value = Matrix4.identity();
               },
               child: const Text("RESET"))
         ]),
@@ -133,27 +174,27 @@ class OpenPainter extends CustomPainter {
     //list of points
     var points = [
       const Offset(50, 50),
-      const Offset(80, 70),
-      const Offset(380, 175),
-      const Offset(80, 175),
-      const Offset(30, 175),
-      const Offset(380, 75),
-      const Offset(200, 175),
-      const Offset(150, 105),
-      const Offset(300, 75),
-      const Offset(320, 200),
-      const Offset(93, 125),
-      const Offset(73, 125),
-      const Offset(210, 127),
-      const Offset(89, 121),
-      const Offset(250, 115),
-      const Offset(89, 150),
-      const Offset(170, 160),
-      const Offset(20, 125),
-      const Offset(10, 125),
+      // const Offset(80, 70),
+      const Offset(420, 175),
+      // const Offset(80, 175),
+      // const Offset(30, 175),
+      // const Offset(380, 75),
+      // const Offset(200, 175),
+      // const Offset(150, 105),
+      // const Offset(300, 75),
+      // const Offset(320, 200),
+      // const Offset(93, 125),
+      // const Offset(73, 125),
+      // const Offset(210, 127),
+      // const Offset(89, 121),
+      // const Offset(250, 115),
+      // const Offset(89, 150),
+      // const Offset(170, 160),
+      // const Offset(20, 125),
+      // const Offset(10, 125),
     ];
     //draw points on canvas
-    canvas.drawPoints(PointMode.points, points, paint1);
+    canvas.drawPoints(ui.PointMode.points, points, paint1);
   }
 
   @override
