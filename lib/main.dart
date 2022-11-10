@@ -1,4 +1,5 @@
-import 'dart:math';
+import 'dart:developer';
+import 'dart:math' hide log;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
@@ -106,21 +107,12 @@ class MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           ElevatedButton(
               onPressed: () {
                 final double scale = double.parse(_zoomController.text);
-                // final x= -double.parse(_xCoordinateController.text)*(scale-1);
-                // final y= -double.parse(_yCoordinateController.text)*(scale-1);
-                final x = double.parse(_xCoordinateController.text) <
-                        (MediaQuery.of(context).size.width / 2)
-                    ? (-((double.parse(_xCoordinateController.text)) -
-                            ((MediaQuery.of(context).size.width) / 2))) *
-                        (scale - 1)
-                    : (-((double.parse(_xCoordinateController.text)) +
-                            ((MediaQuery.of(context).size.width) / 2))) *
-                        (scale - 1);
-                final y = double.parse(_yCoordinateController.text) < (100)
-                    ? (-((double.parse(_yCoordinateController.text)) - 100)) *
-                        (scale - 1)
-                    : (-((double.parse(_yCoordinateController.text)) + 100)) *
-                        (scale - 1);
+                final xDiff = ((MediaQuery.of(context).size.width) / 2 - double.parse(_xCoordinateController.text)) ;
+
+                final yDiff = ( 100 - double.parse(_yCoordinateController.text)) ;
+              
+                final x = -(double.parse(_xCoordinateController.text)-xDiff) * (scale - 1);
+                final y = -(double.parse(_yCoordinateController.text)-yDiff) * (scale - 1);
                 final zoomed = Matrix4.identity()
                   ..translate(x, y)
                   ..scale(scale);
